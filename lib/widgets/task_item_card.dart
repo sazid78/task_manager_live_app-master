@@ -94,20 +94,6 @@ class _TaskItemCardState extends State<TaskItemCard> {
           mainAxisSize: MainAxisSize.min,
           children: items,
         ),
-        actions: [
-          ButtonBar(
-            children: [
-              TextButton(onPressed: (){
-                
-              }, child: Text("Update")),
-              TextButton(onPressed: (){
-
-              }, child: Text("Cancel"),style: ButtonStyle(
-
-              ),)
-            ],
-          )
-        ],
       );
     });
 }

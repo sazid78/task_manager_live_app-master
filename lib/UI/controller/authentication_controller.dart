@@ -9,6 +9,8 @@ class AuthenticationController{
 
 
  static Future<void> saveUserInformation(String t, UserModel model) async {
+
+   model = _checkUserPhoto(model);
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     await sharedPreferences.setString("token", t);
@@ -18,6 +20,7 @@ class AuthenticationController{
   }
 
   static Future<void> updateUserInformation(UserModel model) async {
+    model = _checkUserPhoto(model);
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     await sharedPreferences.setString("user", jsonEncode(model.toJson()));
@@ -27,7 +30,7 @@ class AuthenticationController{
  static Future<void> initializeUserCache() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     token = sharedPreferences.getString("token");
-    UserModel.fromJson(jsonDecode(sharedPreferences.getString("user") ?? "{}"));
+    user = UserModel.fromJson(jsonDecode(sharedPreferences.getString("user") ?? "{}"));
   }
   static Future<bool> checkAuthentication() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -45,4 +48,15 @@ class AuthenticationController{
     token = null;
   }
 
+  static UserModel _checkUserPhoto(UserModel model){
+    if (model.photo != null && model.photo!.startsWith('data:image')) {
+      // Remove data URI prefix if present
+      model.photo = ( model.photo!.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '')) ;
+
+    }
+    return model;
+  }
+
 }
+
+
