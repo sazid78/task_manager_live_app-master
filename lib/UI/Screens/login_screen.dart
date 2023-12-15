@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'package:get/instance_manager.dart';
 import 'package:task_manager_live_app/UI/Screens/forgot_password_screen.dart';
 import 'package:task_manager_live_app/UI/Screens/main_bottom_nav_screen.dart';
 import 'package:task_manager_live_app/UI/Screens/sign_up_screen.dart';
-import 'package:task_manager_live_app/UI/controller/authentication_controller.dart';
-import 'package:task_manager_live_app/data.network_caller/models/user_model.dart';
-import 'package:task_manager_live_app/data.network_caller/network_caller.dart';
-import 'package:task_manager_live_app/data.network_caller/network_response.dart';
-import 'package:task_manager_live_app/data.network_caller/utility/urls.dart';
+import 'package:task_manager_live_app/UI/controller/login_controller.dart';
 import 'package:task_manager_live_app/widgets/body_background.dart';
 import 'package:task_manager_live_app/widgets/snack_message.dart';
 
@@ -22,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailTEcontroller = TextEditingController();
   TextEditingController _passwordTEcontroller = TextEditingController();
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool _loginInProgress = false;
+  final LoginController _loginController = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -85,14 +82,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(
                   width: double.infinity,
-                  child: Visibility(
-                    visible: _loginInProgress == false,
-                    replacement: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    child: ElevatedButton(
-                        onPressed: login,
-                        child: Icon(Icons.arrow_circle_right_outlined)),
+                  child: GetBuilder<LoginController>(
+                    builder: (LoginController){
+                      return Visibility(
+                        visible: LoginController.loginInProgress == false,
+                        replacement: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        child: ElevatedButton(
+                            onPressed: login,
+                            child: Icon(Icons.arrow_circle_right_outlined)),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(
@@ -147,36 +148,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    _loginInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse response = await NetworkCaller().postRequest(Urls.login,
-        body: {
-          "email": _emailTEcontroller.text.trim(),
-          "password": _passwordTEcontroller.text
-        }, isLogin: true);
-    _loginInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      await AuthenticationController.saveUserInformation(
-          response.jsonResponse["token"], UserModel.fromJson(response.jsonResponse["data"]));
-      if (mounted) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MainBottomNavScreen()));
-      }
+    final response = await _loginController.login(_emailTEcontroller.text.trim(), _passwordTEcontroller.text);
+    if (response) {
+     Get.offAll(const MainBottomNavScreen());
     } else {
-      if (response.statusCode == 401) {
         if (mounted) {
-          SnackMessage(context, "Please Check your email/password", true);
+          SnackMessage(context, _loginController.failureMassage);
         }
-      } else {
-        if (mounted) {
-          SnackMessage(context, "Login Failed, Please try again", true);
-        }
-      }
     }
   }
 

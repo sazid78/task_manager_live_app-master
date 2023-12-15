@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart';
 import 'package:task_manager_live_app/UI/Screens/add_new_task_screen.dart';
+import 'package:task_manager_live_app/UI/controller/newTaskController.dart';
 import 'package:task_manager_live_app/data.network_caller/models/task_count.dart';
 import 'package:task_manager_live_app/data.network_caller/models/task_list_model.dart';
 import 'package:task_manager_live_app/data.network_caller/models/task_summery_count_list_model.dart';
@@ -20,32 +23,10 @@ class NewTaskScreen extends StatefulWidget {
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
 
-  bool getNewTaskInProgress = false;
   bool getTaskCountSummeryInProgress = false;
-  TaskListModel taskListModel = TaskListModel();
   TaskSummeryCountListModel taskSummeryCountListModel = TaskSummeryCountListModel();
 
-  Future<void> getNewTaskList() async{
-    getNewTaskInProgress = true;
-    if(mounted){
-      setState(() {
-
-      });
-    }
-    final NetworkResponse response = await NetworkCaller().getRequest(Urls.getNewTask);
-
-    if(response.isSuccess){
-      taskListModel = TaskListModel.fromJson(response.jsonResponse);
-    }
-    getNewTaskInProgress = false;
-    if(mounted){
-      setState(() {
-
-      });
-    }
-  }
-
-  Future<void> getTaskCountSummeryList() async{
+  Future<void> getTaskCountSummaryList() async{
     getTaskCountSummeryInProgress = true;
     if(mounted){
       setState(() {
@@ -65,12 +46,14 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     }
   }
 
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-        getNewTaskList();
-        getTaskCountSummeryList();
+        Get.find<NewTaskController>().getNewTaskList();
+        getTaskCountSummaryList();
+
   }
   @override
   Widget build(BuildContext context) {
@@ -99,33 +82,33 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
           }),
               )),
           Expanded(
-            child: Visibility(
-              visible: getNewTaskInProgress == false,
-              replacement: const Center(
-                child: CircularProgressIndicator(),
-              ),
-              child: RefreshIndicator(
-                onRefresh: () async{
-                  getNewTaskList();
-                },
-                child: ListView.builder(
-                  itemCount: taskListModel.taskList?.length ?? 0,
-                    itemBuilder: (context, index) {
-                  return TaskItemCard(
-                    task: taskListModel.taskList![index],
-                    onStatusChange: (){
-                      getNewTaskList();
+            child: GetBuilder<NewTaskController>(
+              builder: (newTaskController) {
+                return Visibility(
+                  visible: newTaskController.getTaskInProgress == false,
+                  replacement: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  child: RefreshIndicator(
+                    onRefresh: () async{
+                      newTaskController.getNewTaskList();
                     },
-                    showProgress: (inProgress){
-                      if(mounted){
-                        setState(() {
+                    child: ListView.builder(
+                      itemCount: newTaskController.taskListModel.taskList?.length ?? 0,
+                        itemBuilder: (context, index) {
+                      return TaskItemCard(
+                        task: newTaskController.taskListModel.taskList![index],
+                        onStatusChange: (){
+                          newTaskController.getNewTaskList();
+                        },
+                        showProgress: (inProgress){
 
-                        });
-                      }
-                    },
-                  );
-                }),
-              ),
+                        },
+                      );
+                    }),
+                  ),
+                );
+              }
             ),
           ),
         ],

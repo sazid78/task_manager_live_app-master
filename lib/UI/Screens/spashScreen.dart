@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/route_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_manager_live_app/UI/Screens/login_screen.dart';
 import 'package:task_manager_live_app/UI/Screens/main_bottom_nav_screen.dart';
@@ -25,13 +26,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final bool isLoggedIn =
         await AuthenticationController.checkAuthentication();
     Future.delayed(Duration(seconds: 3)).then((value) {
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-              builder: (context) => isLoggedIn
-                  ? const MainBottomNavScreen()
-                  : const LoginScreen()),
-          (route) => false);
+      Get.offAll(isLoggedIn
+          ? const MainBottomNavScreen()
+          : const LoginScreen());
     });
   }
 
