@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_live_app/UI/controller/complited_task_controller.dart';
 import 'package:task_manager_live_app/data.network_caller/models/task_list_model.dart';
 import 'package:task_manager_live_app/data.network_caller/network_caller.dart';
 import 'package:task_manager_live_app/data.network_caller/network_response.dart';
@@ -14,35 +16,11 @@ class ComplitedTaskScreen extends StatefulWidget {
 }
 
 class _ComplitedTaskScreenState extends State<ComplitedTaskScreen> {
-
-  bool getComplitedTaskInProgress = false;
-  TaskListModel taskListModel = TaskListModel();
-  Future<void> getComplitedTaskList() async{
-    getComplitedTaskInProgress = true;
-
-    if(mounted){
-      setState(() {
-
-      });
-    }
-    final NetworkResponse response = await NetworkCaller().getRequest(Urls.getComplitedTask);
-
-    if(response.isSuccess){
-      taskListModel = TaskListModel.fromJson(response.jsonResponse);
-    }
-    getComplitedTaskInProgress = false;
-    if(mounted){
-      setState(() {
-
-      });
-    }
-  }
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getComplitedTaskList();
+    Get.find<ComplitedTaskController>().getComplitedTaskList();
   }
 
 
@@ -52,33 +30,32 @@ class _ComplitedTaskScreenState extends State<ComplitedTaskScreen> {
       children: [
         const ProfileSummeryCard(),
         Expanded(
-          child: Visibility(
-            visible: getComplitedTaskInProgress == false,
-            replacement: const Center(
-              child: CircularProgressIndicator(),
-            ),
-            child: RefreshIndicator(
-              onRefresh: () async{
-                getComplitedTaskList();
-              },
-              child: ListView.builder(
-                  itemCount: taskListModel.taskList?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    return TaskItemCard(
-                      task: taskListModel.taskList![index],
-                      onStatusChange: (){
-                        getComplitedTaskList();
-                      },
-                      showProgress: (inProgress){
-                        if(mounted){
-                          setState(() {
-
-                          });
-                        }
-                      },
-                    );
-                  }),
-            ),
+          child: GetBuilder<ComplitedTaskController>(
+            builder: (complitedTaskController) {
+              return Visibility(
+                visible: complitedTaskController.getComplitedTaskInProgress == false,
+                replacement: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                child: RefreshIndicator(
+                  onRefresh: () async{
+                    complitedTaskController.getComplitedTaskList();
+                  },
+                  child: ListView.builder(
+                      itemCount: complitedTaskController.taskListModel.taskList?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        return TaskItemCard(
+                          task: complitedTaskController.taskListModel.taskList![index],
+                          onStatusChange: (){
+                            complitedTaskController.getComplitedTaskList();
+                          },
+                          showProgress: (inProgress){
+                          },
+                        );
+                      }),
+                ),
+              );
+            }
           ),
         ),
       ],

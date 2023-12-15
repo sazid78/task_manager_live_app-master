@@ -3,6 +3,9 @@ import 'package:get/get_instance/src/bindings_interface.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:get/instance_manager.dart';
 import 'package:task_manager_live_app/UI/Screens/spashScreen.dart';
+import 'package:task_manager_live_app/UI/controller/cancelled_task_controller.dart';
+import 'package:task_manager_live_app/UI/controller/complited_task_controller.dart';
+import 'package:task_manager_live_app/UI/controller/inProgress_task_controller.dart';
 import 'package:task_manager_live_app/UI/controller/login_controller.dart';
 import 'package:task_manager_live_app/UI/controller/newTaskController.dart';
 
@@ -54,6 +57,9 @@ class ControllerBinder extends Bindings{
     // TODO: implement dependencies
     Get.put(LoginController());
     Get.put(NewTaskController());
+    Get.put(InProgressTaskController());
+    Get.put(ComplitedTaskController());
+    Get.put(CancelledTaskController());
   }
 
 }
